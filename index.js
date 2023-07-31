@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const routerAuth = require('./routers/auth');
 const routerUser = require('./routers/user');
+const routerEmployee = require('./routers/employee');
 
 dotenv.config();
 const app = express();
@@ -26,6 +27,7 @@ mongoose
     .catch((error) => console.error('Error connecting to MongoDB:', error));
 app.use('/api/v1/auth', routerAuth);
 app.use('/api/v1/user', routerUser);
+app.use('/api/v1/employee', routerEmployee);
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

@@ -1,0 +1,20 @@
+const EmployeeModel = require('../models/Employee');
+const PAGE_SIZE = 10;
+
+const userController = {
+    getAllEmployee: async (req, res) => {
+        res.json('hihihi');
+    },
+
+    getAllEmployeePanigation: async (req, res) => {},
+
+    getDetailEmployee: async (req, res) => {},
+
+    addEmployee: async (req, res) => {},
+
+    updateEmployees: async (req, res) => {},
+
+    deleteEmployees: async (req, res) => {},
+};
+
+module.exports = userController;
