@@ -1,14 +1,14 @@
 const UserModel = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const saltRounds = 10;
 
 const authController = {
     // Register
     register: async (req, res) => {
         try {
-            const salt = await bcrypt.genSalt(10);
+            const salt = await bcrypt.genSalt(saltRounds);
             const hashed = await bcrypt.hash(req.body.password, salt);
-
             /* Create new uSer*/
             if (req.body.username.length < 6) {
                 return res.status(500).json({ error: 'User required min length >= 6 character' });
@@ -18,6 +18,7 @@ const authController = {
                 email: req.body.email,
                 password: hashed,
                 role: req.body.role,
+                department: req.body.department,
             });
             const user = await newUser.save();
 
@@ -38,10 +39,11 @@ const authController = {
     login: async (req, res) => {
         try {
             const user = await UserModel.findOne({ username: req.body.username });
-            const validatePassword = await bcrypt.compare(req.body.password, user?.password);
             if (!user) {
                 return res.status(404).json('Not found user name');
             }
+
+            const validatePassword = await bcrypt.compare(req.body.password, user?.password);
             if (!validatePassword) {
                 return res.status(404).json('Password is wrong');
             }
@@ -81,6 +83,34 @@ const authController = {
         try {
             res.clearCookie('access_token');
             res.status(200).json({ message: 'Logged out' });
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
+
+    /* Change Password */
+    changePassword: async (req, res) => {
+        try {
+            const user = await UserModel.findOne({ username: req.body.username });
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            const match = await bcrypt.compare(req.body.currentPassword, user.password);
+            if (!match) {
+                return res.status(500).json({ error: 'Your current password is incorrect' });
+            }
+
+            if (req.body.newPassword !== req.body.confirmPassword) {
+                return res.status(500).json({ error: 'New Password and Confirm Password do not match' });
+            }
+
+            const salt = await bcrypt.genSalt(saltRounds);
+            const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+
+            await UserModel.findByIdAndUpdate(user._id, { password: hashedPassword });
+
+            res.status(200).json({ message: 'Change Password Success' });
         } catch (error) {
             res.status(500).json(error);
         }

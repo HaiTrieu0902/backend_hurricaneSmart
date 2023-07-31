@@ -9,5 +9,6 @@ router.get('/get-list-user-panigation', middlewareController.verifyToken, userCo
 
 router.get('/get-detail/:id', middlewareController.verifyToken, userController.getDetailUser);
 router.delete('/detele-user/:id', middlewareController.verifyTokenRoleAdmin, userController.deleteUsers);
+router.put('/update-user/:id', middlewareController.verifyToken, userController.updateUsers);
 
 module.exports = router;

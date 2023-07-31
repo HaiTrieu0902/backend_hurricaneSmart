@@ -7,7 +7,7 @@ const userController = {
         try {
             const totalUser = await UserModel.countDocuments({});
             const totalPage = Math.ceil(totalUser / PAGE_SIZE);
-            const users = await UserModel.find({}, 'username email role user_id'); //-_id
+            const users = await UserModel.find({}, 'username email role user_id department'); //-_id
             res.status(200).json({
                 status: 200,
                 message: 'Get all users successfully',
@@ -30,7 +30,7 @@ const userController = {
             /* Render data panigation */
             if (page) {
                 const skipAuth = (parseInt(page) - 1) * PAGE_SIZE;
-                UserModel.find({}, 'username email role user_id')
+                UserModel.find({}, 'username email role user_id department')
                     .skip(skipAuth)
                     .limit(PAGE_SIZE)
                     .then((data) => {
@@ -77,6 +77,25 @@ const userController = {
         }
     },
 
+    /* update user */
+    updateUsers: async (req, res) => {
+        try {
+            const userId = req.params?.id;
+            UserModel.findByIdAndUpdate(userId, {
+                department: req.body.department,
+            })
+                .then((data) => {
+                    res.status(200).json({ message: 'update user success', status: 200 });
+                })
+                .catch((err) => {
+                    res.status(500).json('Update department failed');
+                });
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
+
+    /* Delete user */
     deleteUsers: async (req, res, next) => {
         try {
             const user = await UserModel.findById(req.params?.id);

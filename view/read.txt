@@ -1,0 +1,4 @@
+/*
+        =========== NOTE =============
+        Currently view is using frontend side, no need to test
+*/
