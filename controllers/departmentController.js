@@ -102,10 +102,64 @@ const departmentController = {
     },
 
     /* update department */
-    updateDepartments: async (req, res) => {},
+    updateDepartments: async (req, res) => {
+        try {
+            const departmentId = req.query?.departmentId;
+            if (!departmentId) {
+                res.status(400).json({
+                    message: 'Bad Request: Missing departmentId in the query parameters',
+                    status: 400,
+                });
+                return;
+            }
+            const updatedData = {
+                name: req.body?.name,
+                code: req.body?.code,
+                company: req.body?.company,
+            };
+            const data = await DepartmentModel.findOneAndUpdate(
+                { department_id: departmentId },
+                updatedData,
+                { new: true } /* Return department new after update */,
+            ).select('-_id -__v');
+            if (data) {
+                res.status(200).json({
+                    message: `Update department successfully`,
+                    status: 200,
+                    data: data,
+                });
+            } else {
+                res.status(404).json({
+                    message: 'Update department failed',
+                    status: 404,
+                });
+            }
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
 
     /* Delete department */
-    deleteDepartments: async (req, res) => {},
+    deleteDepartments: async (req, res) => {
+        try {
+            const departmentId = req.query?.departmentId;
+            if (!departmentId) {
+                res.status(400).json({
+                    message: 'Bad Request: Missing departmentId in the query parameters',
+                    status: 400,
+                });
+                return;
+            }
+            const data = await DepartmentModel.deleteOne({ department_id: departmentId });
+            if (data.deletedCount === 0) {
+                res.status(404).json('Not found department');
+            } else {
+                res.status(200).json(`Delete department successful`);
+            }
+        } catch (error) {
+            res.status(500).json('Delete department failed');
+        }
+    },
 };
 
 module.exports = departmentController;

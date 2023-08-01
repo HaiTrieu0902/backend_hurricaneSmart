@@ -8,6 +8,7 @@ const routerAuth = require('./routers/auth');
 const routerUser = require('./routers/user');
 const routerEmployee = require('./routers/employee');
 const routerDepartment = require('./routers/department');
+const routerMarriage = require('./routers/marriage');
 
 dotenv.config();
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api/v1/auth', routerAuth);
 app.use('/api/v1/user', routerUser);
 app.use('/api/v1/employee', routerEmployee);
 app.use('/api/v1/department', routerDepartment);
+app.use('/api/v1/marriage', routerMarriage);
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

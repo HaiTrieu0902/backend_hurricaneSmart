@@ -8,7 +8,7 @@ router.get('/get-list-department', middlewareController.verifyToken, departmentC
 router.get('/get-detail-department', middlewareController.verifyToken, departmentController.getDetailDepartment);
 
 router.post('/add-department', middlewareController.verifyToken, departmentController.addDepartments);
-router.delete('/detele-department/:id', middlewareController.verifyToken, departmentController.deleteDepartments);
-router.put('/update-department/:id', middlewareController.verifyToken, departmentController.updateDepartments);
+router.delete('/detele-department', middlewareController.verifyToken, departmentController.deleteDepartments);
+router.put('/update-department', middlewareController.verifyToken, departmentController.updateDepartments);
 
 module.exports = router;

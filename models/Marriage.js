@@ -1,71 +1,48 @@
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema(
+const MarriageSchema = new mongoose.Schema(
     {
         marriage_id: {
             type: Number,
             require: true,
             unique: true,
         },
-
-        username: {
+        name: {
             type: String,
             require: true,
-            minlength: 6,
-            maxlength: 255,
             unique: true,
         },
-        email: {
+        code: {
             type: String,
             require: true,
-            minlength: 6,
-            maxlength: 255,
             unique: true,
         },
-        password: {
+        company: {
             type: String,
-            require: true,
-            minlength: 6,
-            maxlength: 255,
-        },
-        role: {
-            type: String,
-            default: 'user',
-        },
-        isActive: {
-            type: Boolean,
-            default: true,
-        },
-        department: {
-            type: String,
-            default: 'staff',
-            require: true,
         },
     },
     { timestamps: true },
 );
 
-// Trước khi lưu, tự động tăng giá trị user_id
-UserSchema.pre('save', function (next) {
-    const user = this;
-    if (!user.isNew) {
-        // Chỉ thực hiện khi tạo mới người dùng, không thực hiện khi update
+MarriageSchema.pre('save', function (next) {
+    const marriage = this;
+    if (!marriage.isNew) {
         return next();
     }
 
-    User.findOne({}, {}, { sort: { user_id: -1 } }, function (err, lastUser) {
+    Marriage.findOne({}, {}, { sort: { marriage_id: -1 } }, function (err, lastMarriage) {
         if (err) {
             return next(err);
         }
 
-        if (lastUser) {
-            user.user_id = lastUser.user_id + 1;
+        if (lastMarriage) {
+            marriage.marriage_id = lastMarriage.marriage_id + 1;
         } else {
-            user.user_id = 1;
+            marriage.marriage_id = 1;
         }
         next();
     });
 });
-const User = mongoose.model('User', UserSchema);
-module.exports = User;
-// module.exports = mongoose.model('User', UserSchema);
+
+const Marriage = mongoose.model('Marriage', MarriageSchema);
+module.exports = Marriage;
