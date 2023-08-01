@@ -1,7 +1,7 @@
 const EmployeeModel = require('../models/Employee');
 const PAGE_SIZE = 10;
 
-const userController = {
+const employeeController = {
     getAllEmployee: async (req, res) => {
         res.json('hihihi');
     },
@@ -17,4 +17,4 @@ const userController = {
     deleteEmployees: async (req, res) => {},
 };
 
-module.exports = userController;
+module.exports = employeeController;

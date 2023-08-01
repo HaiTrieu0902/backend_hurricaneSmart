@@ -5,8 +5,6 @@ const EmployeeSchema = new mongoose.Schema(
         employee_id: {
             type: Number,
             require: true,
-            minlength: 6,
-            maxlength: 255,
             unique: true,
         },
 
@@ -55,7 +53,7 @@ const EmployeeSchema = new mongoose.Schema(
         },
         marriage_id: {
             type: Number,
-            default: 0,
+            default: 1,
         },
         bank_account: {
             type: Number,
@@ -68,11 +66,11 @@ const EmployeeSchema = new mongoose.Schema(
         },
         department_id: {
             type: Number,
-            default: 0,
+            default: 1,
         },
-        position_id: {
-            type: Number,
-            default: 0,
+        position: {
+            type: String,
+            default: 'fresher',
         },
         basic_salary: {
             type: Number,

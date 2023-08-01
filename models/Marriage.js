@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema(
     {
-        user_id: {
+        marriage_id: {
             type: Number,
             require: true,
             unique: true,

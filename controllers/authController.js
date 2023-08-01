@@ -38,9 +38,9 @@ const authController = {
     //Login
     login: async (req, res) => {
         try {
-            const user = await UserModel.findOne({ username: req.body.username });
+            const user = await UserModel.findOne({ email: req.body.email });
             if (!user) {
-                return res.status(404).json('Not found user name');
+                return res.status(404).json('Not found email address');
             }
 
             const validatePassword = await bcrypt.compare(req.body.password, user?.password);
@@ -50,7 +50,7 @@ const authController = {
             if (user && validatePassword) {
                 /* token : Không chưa thời gian có hạn, nếu set thì token trở nên ngắn hạn phù hợp với (Ngân hàng,Giáo dục...) */
                 const token = jwt.sign(
-                    { id: user._id, username: user?.username, role: user?.role, user_id: user.user_id },
+                    { id: user._id, username: user?.username, email: user?.email },
                     process.env.JWT_KEY_TOKEN,
                     { expiresIn: '2h' },
                 );

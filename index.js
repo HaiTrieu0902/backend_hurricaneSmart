@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const routerAuth = require('./routers/auth');
 const routerUser = require('./routers/user');
 const routerEmployee = require('./routers/employee');
+const routerDepartment = require('./routers/department');
 
 dotenv.config();
 const app = express();
@@ -25,9 +26,11 @@ mongoose
     .connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Connected!'))
     .catch((error) => console.error('Error connecting to MongoDB:', error));
+
 app.use('/api/v1/auth', routerAuth);
 app.use('/api/v1/user', routerUser);
 app.use('/api/v1/employee', routerEmployee);
+app.use('/api/v1/department', routerDepartment);
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

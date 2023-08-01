@@ -57,6 +57,7 @@ const userController = {
             res.status(500).json(error);
         }
     },
+
     /* getDetailUser */
     getDetailUser: async (req, res, next) => {
         try {
