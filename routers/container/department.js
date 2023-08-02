@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const departmentController = require('../controllers/Department/departmentController');
-const middlewareController = require('../controllers/Middleware/middlewareController');
+const departmentController = require('../../controllers/Department/departmentController');
+const middlewareController = require('../../controllers/Middleware/middlewareController');
 
 /* get list department  */
 router.get('/get-list-department', middlewareController.verifyToken, departmentController.getAllDepartment);

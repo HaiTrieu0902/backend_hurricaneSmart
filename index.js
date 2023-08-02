@@ -4,11 +4,7 @@ const port = 8000;
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
-const routerAuth = require('./routers/auth');
-const routerUser = require('./routers/user');
-const routerEmployee = require('./routers/employee');
-const routerDepartment = require('./routers/department');
-const routerMarriage = require('./routers/marriage');
+const routerInit = require('./routers');
 
 dotenv.config();
 const app = express();
@@ -28,11 +24,8 @@ mongoose
     .then(() => console.log('Connected!'))
     .catch((error) => console.error('Error connecting to MongoDB:', error));
 
-app.use('/api/v1/auth', routerAuth);
-app.use('/api/v1/user', routerUser);
-app.use('/api/v1/employee', routerEmployee);
-app.use('/api/v1/department', routerDepartment);
-app.use('/api/v1/marriage', routerMarriage);
+/* Router Init */
+routerInit(app);
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

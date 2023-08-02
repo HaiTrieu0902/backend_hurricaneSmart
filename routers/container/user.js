@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/User/userController');
-const middlewareController = require('../controllers/Middleware/middlewareController');
+const userController = require('../../controllers/User/userController');
+const middlewareController = require('../../controllers/Middleware/middlewareController');
 
 /* get list user  */
 router.get('/get-list-user', middlewareController.verifyToken, userController.getAllUSer);
