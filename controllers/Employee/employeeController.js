@@ -1,4 +1,4 @@
-const EmployeeModel = require('../models/Employee');
+const EmployeeModel = require('../../models/Employee');
 const PAGE_SIZE = 10;
 
 const employeeController = {

@@ -1,4 +1,4 @@
-const MarriageModel = require('../models/Marriage');
+const MarriageModel = require('../../models/Marriage');
 
 const marriageController = {
     getAllMarriage: async (req, res) => {

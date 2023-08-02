@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const employeeController = require('../controllers/employeeController');
-const middlewareController = require('../controllers/middlewareController');
+const employeeController = require('../controllers/Employee/employeeController');
+const middlewareController = require('../controllers/Middleware/middlewareController');
 
 /* get list user  */
 router.get('/get-list-employee', middlewareController.verifyToken, employeeController.getAllEmployee);

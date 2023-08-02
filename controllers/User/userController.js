@@ -1,4 +1,4 @@
-const UserModel = require('../models/User');
+const UserModel = require('../../models/User');
 const PAGE_SIZE = 5;
 
 const userController = {

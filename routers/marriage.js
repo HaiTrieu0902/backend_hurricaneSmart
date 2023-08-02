@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const marriageController = require('../controllers/marriageController');
-const middlewareController = require('../controllers/middlewareController');
+const marriageController = require('../controllers/Marriage/marriageController');
+const middlewareController = require('../controllers/Middleware/middlewareController');
 
 /* get list department  */
 router.get('/get-list-marriage', middlewareController.verifyToken, marriageController.getAllMarriage);
