@@ -1,16 +1,41 @@
-const { EmployeeModel } = require('../../models');
+const { EmployeeModel, DepartmentModel, MarriageModel } = require('../../models');
 const PAGE_SIZE = 10;
 const moment = require('moment');
 const employeeController = {
+    /* Cách 1 : truy vấn từ tạo Map */
     getAllEmployee: async (req, res) => {
         try {
             const totalEmployee = await EmployeeModel.countDocuments({});
             const totalPage = Math.ceil(totalEmployee / PAGE_SIZE);
-            const employee = await EmployeeModel.find({}, 'username email role user_id department'); //-_id
+            const employees = await EmployeeModel.find({}, '-_id -__v'); // -_id
+
+            // Fetch all marriage data from MarriageModel and store in a Map for quick lookup
+            const marriages = await MarriageModel.find({}, '-_id marriage_id name');
+            const marriageMap = new Map(marriages.map((marriage) => [marriage.marriage_id, marriage.name]));
+
+            // Fetch all department data from DepartmentModel and store in a Map for quick lookup
+            const departments = await DepartmentModel.find({}, '-_id department_id name');
+            const departmentMap = new Map(departments.map((department) => [department.department_id, department.name]));
+
+            const employeeDataWithExtraFields = await Promise.all(
+                employees.map(async (employee) => {
+                    const { marriage_id, department_id, ...employeeData } = employee.toObject();
+                    const marriage_name = marriageMap.get(marriage_id) || 'Unknown';
+                    const department_name = departmentMap.get(department_id) || 'Unknown';
+                    return {
+                        ...employeeData,
+                        marriage_id,
+                        department_id,
+                        marriage_name,
+                        department_name,
+                    };
+                }),
+            );
+
             res.status(200).json({
                 status: 200,
                 message: 'Get all employee successfully',
-                data: employee,
+                data: employeeDataWithExtraFields,
                 totalPage: totalPage,
                 per_page: PAGE_SIZE,
             });
