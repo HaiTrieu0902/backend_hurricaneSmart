@@ -2,18 +2,16 @@ const { EmployeeModel, DepartmentModel, MarriageModel } = require('../../models'
 const PAGE_SIZE = 10;
 const moment = require('moment');
 const employeeController = {
-    /* Cách 1 : truy vấn từ tạo Map */
+    /* Cách 1 : truy vấn từ cách bình thường */
     getAllEmployee: async (req, res) => {
         try {
             const totalEmployee = await EmployeeModel.countDocuments({});
             const totalPage = Math.ceil(totalEmployee / PAGE_SIZE);
             const employees = await EmployeeModel.find({}, '-_id -__v'); // -_id
 
-            // Fetch all marriage data from MarriageModel and store in a Map for quick lookup
             const marriages = await MarriageModel.find({}, '-_id marriage_id name');
             const marriageMap = new Map(marriages.map((marriage) => [marriage.marriage_id, marriage.name]));
 
-            // Fetch all department data from DepartmentModel and store in a Map for quick lookup
             const departments = await DepartmentModel.find({}, '-_id department_id name');
             const departmentMap = new Map(departments.map((department) => [department.department_id, department.name]));
 
