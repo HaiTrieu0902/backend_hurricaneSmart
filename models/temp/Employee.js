@@ -7,7 +7,11 @@ const EmployeeSchema = new mongoose.Schema(
             require: true,
             unique: true,
         },
-
+        employee_code: {
+            type: String,
+            require: true,
+            unique: true,
+        },
         employee_name: {
             type: String,
             require: true,
@@ -16,8 +20,9 @@ const EmployeeSchema = new mongoose.Schema(
         card_number: {
             type: String,
             require: true,
-            minlength: 14,
+            minlength: 10,
             maxlength: 255,
+            unique: true,
         },
         gender: {
             type: Number,
@@ -56,7 +61,7 @@ const EmployeeSchema = new mongoose.Schema(
         },
         bank_account: {
             type: Number,
-            minlength: 10,
+            minlength: 9,
             require: true,
         },
         bank_name: {
@@ -91,22 +96,6 @@ const EmployeeSchema = new mongoose.Schema(
     { timestamps: true },
 );
 
-// Thêm một hàm kiểm tra cho trường 'date_of_birth'
-EmployeeSchema.path('date_of_birth').validate(function (value) {
-    // Kiểm tra xem 'value' có phải là ngày tháng hợp lệ không
-    if (!validator.isDate(value)) {
-        return false;
-    }
-
-    // Tính tuổi dựa trên 'date_of_birth'
-    const birthDate = new Date(value);
-    const age = new Date().getFullYear() - birthDate.getFullYear();
-
-    // Kiểm tra nếu tuổi ít nhất là 18
-    return age >= 18;
-}, 'Employees must be 18 years or older');
-
-// Trước khi lưu, tự động tăng giá trị user_id
 EmployeeSchema.pre('save', function (next) {
     const employee = this;
     if (!employee.isNew) {
@@ -119,13 +108,15 @@ EmployeeSchema.pre('save', function (next) {
             return next(err);
         }
 
+        let lastEmployeeId = 1000;
         if (lastEmployee) {
-            employee.employee_id = Math.max(lastEmployee.employee_id + 1, 1000);
-        } else {
-            employee.employee_id = 1000;
+            lastEmployeeId = lastEmployee.employee_id;
         }
+        employee.employee_id = lastEmployeeId + 1;
+        employee.employee_code = `PGG_${employee.employee_id}`;
         next();
     });
 });
+
 const Employee = mongoose.model('Employee', EmployeeSchema);
 module.exports = Employee;

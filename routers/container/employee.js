@@ -10,9 +10,7 @@ router.get(
     middlewareController.verifyToken,
     employeeController.getAllEmployeePanigation,
 );
-
-router.get('/add-employee', middlewareController.verifyToken, employeeController.addEmployee);
-
+router.post('/add-employee', middlewareController.verifyToken, employeeController.addEmployee);
 router.get('/get-detail/:id', middlewareController.verifyToken, employeeController.getDetailEmployee);
 router.delete('/detele-employee/:id', middlewareController.verifyToken, employeeController.deleteEmployees);
 router.put('/update-employee/:id', middlewareController.verifyToken, employeeController.updateEmployees);
