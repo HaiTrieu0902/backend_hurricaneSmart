@@ -33,7 +33,6 @@ const EmployeeSchema = new mongoose.Schema(
         mother_name: {
             type: String,
             require: true,
-            minlength: 10,
             maxlength: 255,
         },
         date_of_birth: {
@@ -105,7 +104,7 @@ EmployeeSchema.path('date_of_birth').validate(function (value) {
 
     // Kiểm tra nếu tuổi ít nhất là 18
     return age >= 18;
-}, 'Nhân viên phải đủ 18 tuổi trở lên.');
+}, 'Employees must be 18 years or older');
 
 // Trước khi lưu, tự động tăng giá trị user_id
 EmployeeSchema.pre('save', function (next) {

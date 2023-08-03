@@ -3,7 +3,20 @@ const PAGE_SIZE = 10;
 
 const employeeController = {
     getAllEmployee: async (req, res) => {
-        res.json('hihihi');
+        try {
+            const totalEmployee = await EmployeeModel.countDocuments({});
+            const totalPage = Math.ceil(totalEmployee / PAGE_SIZE);
+            const employee = await EmployeeModel.find({}, 'username email role user_id department'); //-_id
+            res.status(200).json({
+                status: 200,
+                message: 'Get all employee successfully',
+                data: employee,
+                totalPage: totalPage,
+                per_page: PAGE_SIZE,
+            });
+        } catch (error) {
+            res.status(500).json(error);
+        }
     },
 
     getAllEmployeePanigation: async (req, res) => {},
