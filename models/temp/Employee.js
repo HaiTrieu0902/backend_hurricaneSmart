@@ -84,6 +84,10 @@ const EmployeeSchema = new mongoose.Schema(
             type: Number,
             require: true,
         },
+        user_update_id: {
+            type: Number,
+            require: true,
+        },
         benefits: {
             type: [],
             default: ['On leave', 'Social insurance contribution', 'Bonus'],

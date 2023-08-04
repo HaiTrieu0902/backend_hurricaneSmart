@@ -32,9 +32,9 @@ const marriageController = {
                     data: data,
                 });
             } else {
-                res.status(404).json({
+                res.status(40).json({
                     message: 'Marriage not found',
-                    status: 404,
+                    status: 401,
                 });
             }
         } catch (error) {

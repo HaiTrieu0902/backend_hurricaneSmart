@@ -104,7 +104,25 @@ const employeeController = {
         }
     },
 
-    getDetailEmployee: async (req, res) => {},
+    getDetailEmployee: async (req, res) => {
+        try {
+            const idEmployee = req.params?.id;
+            const data = await EmployeeModel.findOne({ employee_id: idEmployee }, '-_id -__v');
+            if (data) {
+                res.status(200).json({
+                    message: 'Successfully',
+                    status: 200,
+                    data: data,
+                });
+            } else {
+                res.status(401).json({
+                    message: 'Not Found Employee',
+                });
+            }
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
 
     addEmployee: async (req, res) => {
         try {
@@ -152,9 +170,105 @@ const employeeController = {
         }
     },
 
-    updateEmployees: async (req, res) => {},
+    updateEmployees: async (req, res) => {
+        try {
+            const idEmployee = req.params?.id;
+            if (!idEmployee) {
+                res.status(400).json({
+                    message: 'Bad Request: Missing idEmployee in the query parameters',
+                    status: 400,
+                });
+                return;
+            }
+            const updatedData = {
+                employee_name: req.body.employee_name,
+                card_number: req.body.card_number,
+                gender: req.body.gender,
+                email: req.body.email,
+                mother_name: req.body.mother_name,
+                date_of_birth: req.body.date_of_birth,
+                place_of_birth: req.body.place_of_birth,
+                home_address: req.body.home_address,
+                mobile_no: req.body.mobile_no,
+                marriage_id: req.body.marriage_id,
+                bank_account: req.body.bank_account,
+                bank_name: req.body.bank_name,
+                department_id: req.body.department_id,
+                position: req.body.position,
+                basic_salary: req.body.basic_salary,
+                user_update_id: req.body.user_update_id,
+                benefits: req.body.benefits,
+                academic_level: req.body.academic_level,
+            };
 
-    deleteEmployees: async (req, res) => {},
+            const data = await EmployeeModel.findOneAndUpdate({ employee_id: idEmployee }, updatedData, {
+                new: true,
+            }).select('-_id -__v');
+            if (data) {
+                res.status(200).json({
+                    message: `Update employee successfully`,
+                    status: 200,
+                    data: data,
+                });
+            } else {
+                res.status(401).json({
+                    message: 'Update employee failed',
+                    status: 401,
+                });
+            }
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
+
+    /* Xóa một */
+    deleteEmployees: async (req, res) => {
+        try {
+            const employeeId = req.query?.employeeId;
+            if (!employeeId) {
+                res.status(400).json({
+                    message: 'Bad Request: Missing employeeId in the query parameters',
+                    status: 400,
+                });
+                return;
+            }
+            const data = await EmployeeModel.deleteOne({ employee_id: employeeId });
+            if (data.deletedCount === 0) {
+                res.status(404).json('Not found employee');
+            } else {
+                res.status(200).json(`Delete employee successful`);
+            }
+        } catch (error) {
+            res.status(500).json('Delete employee failed');
+        }
+    },
+
+    /* Xóa nhiều */
+    deleteEmployeeMultiple: async (req, res) => {
+        try {
+            const employeeIds = req.body?.employeeIds;
+            if (!employeeIds || !Array.isArray(employeeIds) || employeeIds.length === 0) {
+                res.status(400).json({
+                    message: 'Bad Request: Missing or invalid employeeIds in the request body',
+                    status: 400,
+                });
+                return;
+            }
+
+            const deletionResults = await EmployeeModel.deleteMany({ employee_id: { $in: employeeIds } });
+            const deletedCount = deletionResults.deletedCount;
+
+            if (deletedCount === 0) {
+                res.status(404).json('No employees found');
+            } else if (deletedCount === employeeIds.length) {
+                res.status(200).json(`Successfully deleted all ${deletedCount} employees`);
+            } else {
+                res.status(200).json(`Successfully deleted ${deletedCount} employees`);
+            }
+        } catch (error) {
+            res.status(500).json('Delete employees failed');
+        }
+    },
 };
 
 module.exports = employeeController;
