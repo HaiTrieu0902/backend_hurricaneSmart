@@ -1,6 +1,17 @@
 const { EmployeeModel, DepartmentModel, MarriageModel } = require('../../models');
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 2;
 const moment = require('moment');
+
+const getMarriages = async () => {
+    const marriages = await MarriageModel.find({}, '-_id marriage_id name').lean();
+    return new Map(marriages.map((marriage) => [marriage.marriage_id, marriage.name]));
+};
+
+const getDepartments = async () => {
+    const departments = await DepartmentModel.find({}, '-_id department_id name').lean();
+    return new Map(departments.map((department) => [department.department_id, department.name]));
+};
+
 const employeeController = {
     /* Cách 1 : truy vấn từ cách bình thường */
     getAllEmployee: async (req, res) => {
@@ -9,11 +20,10 @@ const employeeController = {
             const totalPage = Math.ceil(totalEmployee / PAGE_SIZE);
             const employees = await EmployeeModel.find({}, '-_id -__v'); // -_id
 
-            const marriages = await MarriageModel.find({}, '-_id marriage_id name');
-            const marriageMap = new Map(marriages.map((marriage) => [marriage.marriage_id, marriage.name]));
-
-            const departments = await DepartmentModel.find({}, '-_id department_id name');
-            const departmentMap = new Map(departments.map((department) => [department.department_id, department.name]));
+            /* get data marriageMap*/
+            const marriageMap = await getMarriages();
+            /* get data department*/
+            const departmentMap = await getDepartments();
 
             const employeeDataWithExtraFields = await Promise.all(
                 employees.map(async (employee) => {
@@ -44,7 +54,54 @@ const employeeController = {
 
     getAllEmployeePanigation: async (req, res) => {
         try {
-        } catch (error) {}
+            const page = req.query?.page;
+            /* Tính tổng trang page */
+            const totalEmployee = await EmployeeModel.countDocuments({});
+            const totalPage = Math.ceil(totalEmployee / PAGE_SIZE);
+
+            /* get data marriageMap*/
+            const marriageMap = await getMarriages();
+            /* get data department*/
+            const departmentMap = await getDepartments();
+
+            /* Render data panigation */
+            if (page) {
+                const skipAuth = (parseInt(page) - 1) * PAGE_SIZE;
+                const data = await EmployeeModel.find({}, '-_id -__v').skip(skipAuth).limit(PAGE_SIZE);
+
+                const employeeDataWithExtraFields = await Promise.all(
+                    data.map(async (employee) => {
+                        const { marriage_id, department_id, ...employeeData } = employee.toObject();
+                        const marriage_name = marriageMap.get(marriage_id) || 'Unknown';
+                        const department_name = departmentMap.get(department_id) || 'Unknown';
+                        return {
+                            ...employeeData,
+                            marriage_id,
+                            department_id,
+                            marriage_name,
+                            department_name,
+                        };
+                    }),
+                );
+
+                if (data?.length > 0) {
+                    res.status(200).json({
+                        page: parseInt(page),
+                        message: `get list page ${page} pagination success`,
+                        status: 200,
+                        data: employeeDataWithExtraFields,
+                        total: data.length,
+                        totalPage: totalPage,
+                    });
+                } else {
+                    return res.status(401).json('get failed data');
+                }
+            } else {
+                return res.status(401).json('get failed data');
+            }
+        } catch (error) {
+            res.status(500).json(error);
+        }
     },
 
     getDetailEmployee: async (req, res) => {},
