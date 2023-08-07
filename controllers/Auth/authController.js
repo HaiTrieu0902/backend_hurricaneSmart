@@ -45,7 +45,7 @@ const authController = {
 
             const validatePassword = await bcrypt.compare(req.body.password, user?.password);
             if (!validatePassword) {
-                return res.status(404).json('Password is wrong');
+                return res.status(400).json('Password is wrong');
             }
             if (user && validatePassword) {
                 /* token : Không chưa thời gian có hạn, nếu set thì token trở nên ngắn hạn phù hợp với (Ngân hàng,Giáo dục...) */
