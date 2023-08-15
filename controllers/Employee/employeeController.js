@@ -1,5 +1,5 @@
 const { EmployeeModel, DepartmentModel, MarriageModel } = require('../../models');
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 4;
 const moment = require('moment');
 
 const getMarriages = async () => {
@@ -94,7 +94,7 @@ const employeeController = {
                         totalPage: totalPage,
                     });
                 } else {
-                    return res.status(401).json('get failed data');
+                    return res.status(401).json('Page not found values');
                 }
             } else {
                 return res.status(401).json('get failed data');
