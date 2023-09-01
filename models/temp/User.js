@@ -8,12 +8,22 @@ const UserSchema = new mongoose.Schema(
             unique: true,
         },
 
+        user_code: {
+            type: String,
+            require: true,
+            unique: true,
+        },
         username: {
             type: String,
             require: true,
             minlength: 6,
             maxlength: 255,
             unique: true,
+        },
+        fullname: {
+            type: String,
+            require: true,
+            maxlength: 50,
         },
         email: {
             type: String,
@@ -36,11 +46,6 @@ const UserSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
-        department: {
-            type: String,
-            default: 'staff',
-            require: true,
-        },
     },
     { timestamps: true },
 );
@@ -52,17 +57,19 @@ UserSchema.pre('save', function (next) {
         // Chỉ thực hiện khi tạo mới người dùng, không thực hiện khi update
         return next();
     }
-
     User.findOne({}, {}, { sort: { user_id: -1 } }, function (err, lastUser) {
         if (err) {
             return next(err);
         }
 
+        let lastUserId = 1000;
         if (lastUser) {
-            user.user_id = lastUser.user_id + 1;
+            lastUserId = parseInt(lastUser.user_id) + 1;
         } else {
-            user.user_id = 1;
+            lastUserId = 1001;
         }
+        user.user_id = lastUserId;
+        user.user_code = `PGG_${user.user_id}`;
         next();
     });
 });

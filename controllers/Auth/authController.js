@@ -3,6 +3,14 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const saltRounds = 10;
 
+const isValidEmail = (email) => {
+    if (email.length === 0) {
+        return 'Please enter email';
+    } else if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+        return 'Email is not formatted correctly';
+    }
+    return '';
+};
 const authController = {
     // Register
     register: async (req, res) => {
@@ -13,12 +21,21 @@ const authController = {
             if (req.body.username.length < 6) {
                 return res.status(500).json({ error: 'User required min length >= 6 character' });
             }
+
+            if (isValidEmail(req.body.email) !== '') {
+                const valueError = isValidEmail(req.body.email);
+                return res.status(401).json({ error: valueError });
+            }
+
+            if (req.body.password !== req.body.confirmPassword) {
+                return res.status(500).json({ error: 'Password and Confirm Password do not match , Try Again' });
+            }
+
             const newUser = await new UserModel({
                 username: req.body.username,
+                fullname: req.body.fullname,
                 email: req.body.email,
                 password: hashed,
-                role: req.body.role,
-                department: req.body.department,
             });
             const user = await newUser.save();
 
@@ -28,6 +45,8 @@ const authController = {
                 data: {
                     username: user?.username,
                     email: user?.email,
+                    fullName: user?.fullname,
+                    user_code: user?.user_code,
                 },
             });
         } catch (error) {
@@ -38,21 +57,21 @@ const authController = {
     //Login
     login: async (req, res) => {
         try {
-            const user = await UserModel.findOne({ email: req.body.email });
+            const user = await UserModel.findOne({ username: req.body.username });
             if (!user) {
-                return res.status(404).json('Not found email address');
+                return res.status(404).json('Not found username address');
             }
 
             const validatePassword = await bcrypt.compare(req.body.password, user?.password);
             if (!validatePassword) {
                 return res.status(400).json('Password is wrong');
             }
+
             if (user && validatePassword) {
                 /* token : Không chưa thời gian có hạn, nếu set thì token trở nên ngắn hạn phù hợp với (Ngân hàng,Giáo dục...) */
                 const token = jwt.sign(
                     { id: user._id, username: user?.username, email: user?.email },
                     process.env.JWT_KEY_TOKEN,
-                    { expiresIn: '2h' },
                 );
 
                 /* create cookies: ngăn chặn tấn công  */
@@ -67,7 +86,9 @@ const authController = {
                     message: 'Login successfully',
                     data: {
                         user_id: user?.user_id,
+                        user_code: user?.user_code,
                         username: user?.username,
+                        fullName: user?.fullname,
                         email: user?.email,
                         token: token,
                     },
@@ -111,6 +132,35 @@ const authController = {
             await UserModel.findByIdAndUpdate(user._id, { password: hashedPassword });
 
             res.status(200).json({ message: 'Change Password Success' });
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
+
+    /* Forgot-password  */
+    forgotPassword: async (req, res) => {
+        try {
+            const user = await UserModel.findOne({ username: req.body.username });
+            if (!user) {
+                return res.status(404).json({ error: 'Not Foud User, Try it again!' });
+            }
+
+            // if (req.body.code !== user.user_code) {
+            //     return res.status(404).json({ error: 'Code is wrong, try it again !' });
+            // }
+
+            if (req.body.password === req.body.confirmPassword) {
+                const salt = await bcrypt.genSalt(saltRounds);
+                const hashedPassword = await bcrypt.hash(req.body.confirmPassword, salt);
+                const updateResult = await UserModel.findByIdAndUpdate(user._id, { password: hashedPassword });
+                if (updateResult) {
+                    return res.status(200).json({ message: 'Change Password Success' });
+                } else {
+                    return res.status(401).json({ message: 'Change Password Failed' });
+                }
+            } else {
+                return res.status(500).json({ message: 'New Password and Confirm Password not match' });
+            }
         } catch (error) {
             res.status(500).json(error);
         }
