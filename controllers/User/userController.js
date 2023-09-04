@@ -7,7 +7,7 @@ const userController = {
         try {
             const totalUser = await UserModel.countDocuments({});
             const totalPage = Math.ceil(totalUser / PAGE_SIZE);
-            const users = await UserModel.find({}, 'username email role user_id department'); //-_id
+            const users = await UserModel.find({}, '-id -__v -password -role'); //-_id
             res.status(200).json({
                 status: 200,
                 message: 'Get all users successfully',
@@ -59,10 +59,11 @@ const userController = {
     },
 
     /* getDetailUser */
-    getDetailUser: async (req, res, next) => {
+    getDetailUser: async (req, res) => {
         try {
-            const idUser = req.params?.id;
-            UserModel.findById(idUser, 'username email role')
+            const userCode = req.query?.code;
+
+            UserModel.findOne({ user_code: userCode }, '-id -__v -password -role')
                 .then((data) => {
                     res.status(200).json({
                         message: 'get user success',
@@ -81,16 +82,26 @@ const userController = {
     /* update user */
     updateUsers: async (req, res) => {
         try {
-            const userId = req.params?.id;
-            UserModel.findByIdAndUpdate(userId, {
-                department: req.body.department,
-            })
-                .then((data) => {
-                    res.status(200).json({ message: 'update user success', status: 200 });
-                })
-                .catch((err) => {
-                    res.status(500).json('Update department failed');
+            const userCode = req.query?.code;
+            const updatedData = {
+                fullname: req.body?.fullname,
+                email: req.body?.email,
+            };
+            const data = await UserModel.findOneAndUpdate({ user_code: userCode }, updatedData, { new: true }).select(
+                '-_id -__v -password -role',
+            );
+            if (data) {
+                res.status(200).json({
+                    message: `Update user successfully`,
+                    status: 200,
+                    data: data,
                 });
+            } else {
+                res.status(401).json({
+                    message: 'Update user failed',
+                    status: 401,
+                });
+            }
         } catch (error) {
             res.status(500).json(error);
         }
@@ -99,9 +110,10 @@ const userController = {
     /* Delete user */
     deleteUsers: async (req, res, next) => {
         try {
-            const user = await UserModel.findById(req.params?.id);
+            const userCode = req.query?.user_code;
+            const user = await UserModel.findOne({ user_code: userCode });
             if (user) {
-                UserModel.deleteOne({ _id: req.params.id })
+                UserModel.deleteOne({ user_code: userCode })
                     .then((data) => {
                         res.status(200).json('Delete successful');
                     })

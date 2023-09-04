@@ -6,8 +6,8 @@ const middlewareController = require('../../controllers/Middleware/middlewareCon
 /* get list user  */
 router.get('/get-list-user', middlewareController.verifyToken, userController.getAllUSer);
 router.get('/get-list-user-panigation', middlewareController.verifyToken, userController.getAllUSerPanigation);
-router.get('/get-detail/:id', middlewareController.verifyToken, userController.getDetailUser);
-router.delete('/detele-user/:id', middlewareController.verifyTokenRoleAdmin, userController.deleteUsers);
-router.put('/update-user/:id', middlewareController.verifyToken, userController.updateUsers);
+router.get('/get-detail-user', middlewareController.verifyToken, userController.getDetailUser);
+router.delete('/detele-user', middlewareController.verifyTokenRoleAdmin, userController.deleteUsers);
+router.put('/update-user', middlewareController.verifyToken, userController.updateUsers);
 
 module.exports = router;

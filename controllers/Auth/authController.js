@@ -70,7 +70,7 @@ const authController = {
             if (user && validatePassword) {
                 /* token : Không chưa thời gian có hạn, nếu set thì token trở nên ngắn hạn phù hợp với (Ngân hàng,Giáo dục...) */
                 const token = jwt.sign(
-                    { id: user._id, username: user?.username, email: user?.email },
+                    { id: user._id, username: user?.username, email: user?.email, user_code: user?.user_code },
                     process.env.JWT_KEY_TOKEN,
                 );
 

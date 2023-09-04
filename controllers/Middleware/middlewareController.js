@@ -18,10 +18,10 @@ const middlewareController = {
 
     verifyTokenRoleAdmin: (req, res, next) => {
         middlewareController.verifyToken(req, res, () => {
-            if (req.data?.id === req.params.id || req.data?.role === 'admin') {
+            if (req.data?.user_code === req.query.user_code) {
                 next();
             } else {
-                return res.status(401).json({ message: 'You are not allowed to delete othe, you can delete you' });
+                return res.status(401).json({ message: 'You are not allowed to delete other, you can delete you' });
             }
         });
     },
