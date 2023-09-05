@@ -62,7 +62,6 @@ const userController = {
     getDetailUser: async (req, res) => {
         try {
             const userCode = req.query?.code;
-
             UserModel.findOne({ user_code: userCode }, '-id -__v -password -role')
                 .then((data) => {
                     res.status(200).json({
