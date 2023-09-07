@@ -9,8 +9,8 @@ const categoryController = {
             res.status(200).json({
                 status: 200,
                 message: 'Get all category successfully',
-                data: category,
                 total: totalCategory,
+                data: category,
             });
         } catch (error) {
             res.status(500).json(error);
