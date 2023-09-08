@@ -19,8 +19,7 @@ const TransactionSchema = new mongoose.Schema(
             require: true,
         },
         note: {
-            type: Number,
-            require: true,
+            type: String,
         },
         date: {
             type: Date,
@@ -37,7 +36,7 @@ TransactionSchema.pre('save', function (next) {
         // Chỉ thực hiện khi tạo mới người dùng, không thực hiện khi update
         return next();
     }
-    transaction.findOne({}, {}, { sort: { transaction_id: -1 } }, function (err, lastTransaction) {
+    Transactions.findOne({}, {}, { sort: { transaction_id: -1 } }, function (err, lastTransaction) {
         if (err) {
             return next(err);
         }
