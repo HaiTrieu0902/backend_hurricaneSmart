@@ -75,7 +75,6 @@ const limitationController = {
             if (limitation) {
                 return res.status(200).json({
                     message: `Get detail limitation ID ${limitationId} successfully`,
-
                     status: 200,
                     data: limitation,
                 });
@@ -241,7 +240,42 @@ const limitationController = {
     /* Update limitation*/
     updateLimitation: async (req, res) => {
         try {
-            res.status(200).json('update');
+            const { userId, month, year, categoryId } = req.query;
+            if (!userId || !month || !year || !categoryId) {
+                return res.status(400).json({
+                    message: 'Bad Request: Missing required parameters',
+                    status: 400,
+                });
+            }
+
+            const updatedData = {
+                amount_limit: req.body?.amount_limit,
+            };
+            const limitations = await LimitationModel.findOneAndUpdate(
+                {
+                    user_id: userId,
+                    category_id: categoryId,
+                    month: month,
+                    year: year,
+                },
+                updatedData,
+                {
+                    new: true,
+                },
+            ).select('-_id -__v -user_id -month -year');
+
+            if (limitations) {
+                res.status(200).json({
+                    message: `Update category successfully`,
+                    user_id: userId,
+                    month: month,
+                    year: year,
+                    status: 200,
+                    data: limitations,
+                });
+            } else {
+                return res.status(401).json('Not Found Limitation for User');
+            }
         } catch (error) {
             res.status(500).json(error);
         }
