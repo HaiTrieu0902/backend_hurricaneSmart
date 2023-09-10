@@ -55,17 +55,98 @@ const transactionController = {
                     userId: userId,
                     data: transactions,
                 });
+            } else {
+                return res.status(404).json({ message: 'Not found User ID', status: 404 });
             }
         } catch (error) {
             res.status(500).json(error);
         }
     },
-
     /* Get detail Transaction - User - Month*/
+    // getDetailTransactionUserByMonth: async (req, res) => {
+    //     try {
+    //         const { userId, month, year } = req.query;
+    //         if (!userId || !month || !year) {
+    //             return res.status(400).json({
+    //                 message: 'Bad Request: Missing required parameters',
+    //                 status: 400,
+    //             });
+    //         }
+
+    //         const startDate = moment(`${year}-${month}-01`, 'YYYY-MM-DD');
+    //         const endDate = moment(startDate).endOf('month');
+
+    //         const data = await TransactionModel.find(
+    //             {
+    //                 user_id: userId,
+    //                 date: {
+    //                     $gte: startDate.toDate(),
+    //                     $lte: endDate.toDate(),
+    //                 },
+    //             },
+    //             '-_id -__v',
+    //         );
+    //         res.status(200).json({
+    //             message: 'Filtered Transaction Data by User ID, Month, and Year',
+    //             status: 200,
+    //             data: data,
+    //         });
+    //     } catch (error) {
+    //         res.status(500).json(error);
+    //     }
+    // },
     getDetailTransactionUserByMonth: async (req, res) => {
         try {
-            return res.status(200).json({ message: 'getDetailTransactionUserByMonth' });
-        } catch (error) {}
+            const { userId, month, year } = req.query;
+            if (!userId || !month || !year) {
+                return res.status(400).json({
+                    message: 'Bad Request: Missing required parameters',
+                    status: 400,
+                });
+            }
+            const startDate = moment(`${year}-${month}-01`, 'YYYY-MM-DD'); // Ngày đầu tháng
+            const endDate = moment(startDate).endOf('month'); // Ngày cuối tháng
+            const data = await TransactionModel.find(
+                {
+                    user_id: userId,
+                    date: {
+                        $gte: startDate.toDate(),
+                        $lte: endDate.toDate(),
+                    },
+                },
+                '-_id -__v',
+            );
+            let totalAmount = 0;
+            const groupedData = {};
+            data.forEach((transaction) => {
+                const transactionDate = moment(transaction.date).format('YYYY-MM-DD');
+                totalAmount += transaction.amount;
+                const { user_id, date, createdAt, updatedAt, ...transactionRes } = transaction.toObject();
+                if (!groupedData[transactionDate]) {
+                    groupedData[transactionDate] = {
+                        date: transactionDate,
+                        totalAmountDate: transaction.amount,
+                        data: [transactionRes],
+                    };
+                } else {
+                    groupedData[transactionDate].totalAmountDate += transaction.amount;
+                    groupedData[transactionDate].data.push(transactionRes);
+                }
+            });
+            const valueTransactionFilterMonth = Object.values(groupedData);
+            valueTransactionFilterMonth.sort((a, b) => {
+                return new Date(a.date) - new Date(b.date);
+            });
+            res.status(200).json({
+                message: 'Filtered Transaction Data by User ID, Month, and Year',
+                status: 200,
+                totalAmount: totalAmount,
+                userId: userId,
+                data: valueTransactionFilterMonth,
+            });
+        } catch (error) {
+            res.status(500).json(error);
+        }
     },
 
     /* add Transaction */
@@ -76,18 +157,18 @@ const transactionController = {
                 return res.status(401).json({ error: 'Not found user ID, please try it again!' });
             }
 
-            const category = await CategoryModel.findOne({ category_id: req.body.category_id });
+            const category = await CategoryModel.findOne({ category_key: req.body.category_key });
             if (!category) {
-                return res.status(401).json({ error: 'Not found category ID, please try it again!' });
+                return res.status(401).json({ error: 'Not found category Key, please try it again!' });
             }
-            const dateTransaction = moment(req.body.date, 'DD/MM/YYYY');
+            const dateTransaction = moment.utc(req.body.date, 'DD/MM/YYYY');
 
             const newTransaction = await new TransactionModel({
                 user_id: req.body.user_id,
-                category_id: req.body.category_id,
+                category_key: req.body.category_key,
                 amount: req.body.amount,
-                date: dateTransaction,
                 note: req.body.note,
+                date: dateTransaction,
             });
             const transaction = await newTransaction.save();
             const { _id, __v, ...transactionData } = transaction.toObject();
@@ -105,7 +186,41 @@ const transactionController = {
     /* Update Transaction*/
     updateTransaction: async (req, res) => {
         try {
-            return res.status(200).json({ message: 'Update' });
+            const transactionId = req.query?.transactionId;
+            if (!transactionId) {
+                return res.status(400).json({
+                    message: 'Bad Request: Missing transactionId in the query parameters',
+                    status: 400,
+                });
+            }
+
+            const category = await CategoryModel.findOne({ category_key: req.body.category_key });
+            if (!category) {
+                return res.status(401).json({ error: 'Not found category ID, please try it again!' });
+            }
+
+            const dateTransaction = moment.utc(req.body.date, 'DD/MM/YYYY');
+            const updatedData = {
+                category_key: req.body.category_key,
+                amount: req.body.amount,
+                note: req.body.note,
+                date: dateTransaction,
+            };
+            const data = await TransactionModel.findOneAndUpdate({ transaction_id: transactionId }, updatedData, {
+                new: true,
+            }).select('-_id -__v');
+            if (data) {
+                res.status(200).json({
+                    message: `Update Transaction ID: ${transactionId} successfully`,
+                    status: 200,
+                    data: data,
+                });
+            } else {
+                res.status(401).json({
+                    message: 'Update Transaction failed',
+                    status: 401,
+                });
+            }
         } catch (error) {
             res.status(500).json(error);
         }
@@ -114,7 +229,19 @@ const transactionController = {
     /* Delete Transaction */
     deleteTransaction: async (req, res) => {
         try {
-            return res.status(200).json({ message: 'Delete' });
+            const transactionId = req.query?.transactionId;
+            const transaction = await TransactionModel.findOne({ transaction_id: transactionId });
+            if (transaction) {
+                TransactionModel.deleteOne({ transaction_id: transactionId })
+                    .then((data) => {
+                        res.status(200).json(`Transaction ID: ${transaction?.transaction_id} has delete successfully`);
+                    })
+                    .catch((err) => {
+                        res.status(401).json('Delete Transaction failed');
+                    });
+            } else {
+                res.status(404).json('Not found Transaction ID');
+            }
         } catch (error) {
             res.status(500).json(error);
         }

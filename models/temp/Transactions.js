@@ -6,8 +6,8 @@ const TransactionSchema = new mongoose.Schema(
             require: true,
             unique: true,
         },
-        category_id: {
-            type: Number,
+        category_key: {
+            type: String,
             require: true,
         },
         user_id: {

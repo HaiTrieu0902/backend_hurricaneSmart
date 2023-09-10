@@ -6,8 +6,8 @@ const LimitationSchema = new mongoose.Schema(
             require: true,
             unique: true,
         },
-        category_id: {
-            type: Number,
+        category_key: {
+            type: String,
             require: true,
             unique: false,
         },

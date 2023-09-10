@@ -27,13 +27,11 @@ const limitationController = {
                 if (!structuredData[user_id]) {
                     structuredData[user_id] = [];
                 }
-
                 const userLimits = structuredData[user_id];
                 const existingLimit = userLimits.find((limit) => limit.month === month && limit.year === year);
-
                 if (existingLimit) {
                     existingLimit.data.push({
-                        category_id: limitation.category_id,
+                        category_key: limitation.category_key,
                         amount_limit: limitation.amount_limit,
                         createdAt: limitation.createdAt,
                         updatedAt: limitation.updatedAt,
@@ -45,7 +43,7 @@ const limitationController = {
                         year,
                         data: [
                             {
-                                category_id: limitation.category_id,
+                                category_key: limitation.category_key,
                                 amount_limit: limitation.amount_limit,
                                 createdAt: limitation.createdAt,
                                 updatedAt: limitation.updatedAt,
@@ -112,7 +110,7 @@ const limitationController = {
                     );
                     if (existingEntry) {
                         existingEntry.categories.push({
-                            category_id: limitation.category_id,
+                            category_key: limitation.category_key,
                             amount_limit: limitation.amount_limit,
                             limitation_id: limitation.limitation_id,
                         });
@@ -122,7 +120,7 @@ const limitationController = {
                             year,
                             categories: [
                                 {
-                                    category_id: limitation.category_id,
+                                    category_key: limitation.category_key,
                                     amount_limit: limitation.amount_limit,
                                     limitation_id: limitation.limitation_id,
                                 },
@@ -162,16 +160,20 @@ const limitationController = {
                 '-_id -__v',
             );
             if (limitations && limitations.length > 0) {
+                const totalAmountLimit = limitations.reduce((total, limitation) => {
+                    return total + limitation.amount_limit;
+                }, 0);
                 return res.status(200).json({
                     message: `Get all limitations for user ID ${userId},${month}/${year} successfully`,
                     status: 200,
+                    totalAmountLimit: totalAmountLimit,
                     user_id: Number(userId),
                     month: Number(month),
                     year: Number(year),
                     data: limitations.map((limitation) => {
-                        const { category_id, amount_limit, createdAt, updatedAt, limitation_id } = limitation;
+                        const { category_key, amount_limit, createdAt, updatedAt, limitation_id } = limitation;
                         return {
-                            category_id,
+                            category_key,
                             amount_limit,
                             createdAt,
                             updatedAt,
@@ -195,14 +197,14 @@ const limitationController = {
                 return res.status(401).json({ error: 'Not found user ID, please try it again!' });
             }
 
-            const category = await CategoryModel.findOne({ category_id: req.body.category_id });
+            const category = await CategoryModel.findOne({ category_key: req.body.category_key });
             if (!category) {
-                return res.status(401).json({ error: 'Not found category ID, please try it again!' });
+                return res.status(401).json({ error: 'Not found category key, please try it again!' });
             }
 
             const existingLimitation = await LimitationModel.findOne({
                 user_id: req.body.user_id,
-                category_id: req.body.category_id,
+                category_key: req.body.category_key,
                 month: req.body.month,
                 year: req.body.year,
             });
@@ -213,7 +215,7 @@ const limitationController = {
                     .json({ error: 'Limitation already exists for this user, category, month, and year!' });
             }
             const newLimitation = await new LimitationModel({
-                category_id: req.body.category_id,
+                category_key: req.body.category_key,
                 user_id: req.body.user_id,
                 amount_limit: req.body.amount_limit,
                 month: req.body.month,
@@ -225,7 +227,7 @@ const limitationController = {
                 message: 'Create new limitation Successfully',
                 data: {
                     limmitation_id: limmitation.limitation_id,
-                    category_id: limmitation.category_id,
+                    category_key: limmitation.category_key,
                     user_id: limmitation.user_id,
                     amount_limit: limmitation.amount_limit,
                     createAt: limmitation.createdAt,
@@ -240,8 +242,8 @@ const limitationController = {
     /* Update limitation*/
     updateLimitation: async (req, res) => {
         try {
-            const { userId, month, year, categoryId } = req.query;
-            if (!userId || !month || !year || !categoryId) {
+            const { userId, month, year, categoryKey } = req.query;
+            if (!userId || !month || !year || !categoryKey) {
                 return res.status(400).json({
                     message: 'Bad Request: Missing required parameters',
                     status: 400,
@@ -254,7 +256,7 @@ const limitationController = {
             const limitations = await LimitationModel.findOneAndUpdate(
                 {
                     user_id: userId,
-                    category_id: categoryId,
+                    category_key: categoryKey,
                     month: month,
                     year: year,
                 },
@@ -263,7 +265,6 @@ const limitationController = {
                     new: true,
                 },
             ).select('-_id -__v -user_id -month -year');
-
             if (limitations) {
                 res.status(200).json({
                     message: `Update category successfully`,
