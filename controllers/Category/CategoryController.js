@@ -1,4 +1,5 @@
-const { CategoryModel } = require('../../models');
+const { CategoryModel, LimitationModel } = require('../../models');
+const { getDetailLimitationUserByMonth } = require('../Limitation/LimitationController');
 
 const categoryController = {
     /* Get all category */
@@ -102,6 +103,57 @@ const categoryController = {
                     });
             } else {
                 res.status(500).json('Not found category ID');
+            }
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
+
+    /* Get category month limiation */
+    getUserCategoryLitationMonth: async (req, res) => {
+        try {
+            const { userId, month, year } = req.query;
+            if (!userId || !month || !year) {
+                return res.status(400).json({
+                    message: 'Bad Request: Missing required parameters',
+                    status: 400,
+                });
+            }
+            const limitations = await LimitationModel.find({ user_id: userId, month: month, year: year }).select(
+                '-_id -__v',
+            );
+            if (limitations && limitations.length > 0) {
+                const category = await CategoryModel.find({}, '-id -__v -password -role'); // Lấy danh sách category
+
+                // Duyệt qua danh sách category và kiểm tra amount_limit từ limitations
+                const modifiedCategory = category.map((cat) => {
+                    const limitation = limitations.find((limit) => limit.category_key === cat.category_key);
+
+                    if (limitation && limitation.amount_limit > 0) {
+                        return { ...cat.toObject(), isLimiation: true };
+                    } else {
+                        return { ...cat.toObject(), isLimiation: false };
+                    }
+                });
+
+                res.status(200).json({
+                    status: 200,
+                    message: 'Get all category user limitation successfully',
+                    userID: userId,
+                    total: category.length,
+                    month: parseInt(month),
+                    year: parseInt(year),
+                    data: modifiedCategory,
+                });
+            } else {
+                const totalCategory = await CategoryModel.countDocuments({});
+                const category = await CategoryModel.find({}, '-id -__v -password -role'); //-_id
+                res.status(200).json({
+                    status: 200,
+                    message: 'Get all category successfully',
+                    total: totalCategory,
+                    data: category,
+                });
             }
         } catch (error) {
             res.status(500).json(error);

@@ -6,6 +6,12 @@ const middlewareController = require('../../controllers/Middleware/middlewareCon
 /* get list user  */
 router.get('/get-all-category', middlewareController.verifyToken, categoryController.getAllCategory);
 router.get('/get-detail-category', middlewareController.verifyToken, categoryController.getDetailCategory);
+router.get(
+    '/get-user-category-limitation',
+    middlewareController.verifyToken,
+    categoryController.getUserCategoryLitationMonth,
+);
+
 router.delete('/detele-category', middlewareController.verifyToken, categoryController.deleteCategory);
 router.put('/update-category', middlewareController.verifyToken, categoryController.updateCategory);
 router.post('/add-category', middlewareController.verifyToken, categoryController.addCategory);
