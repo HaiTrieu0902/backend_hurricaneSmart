@@ -20,5 +20,12 @@ router.post(
 );
 
 router.put('/update-transaction', middlewareController.verifyToken, transactionController.updateTransaction);
-router.post('/add-transaction', middlewareController.verifyToken, transactionController.addTransaction);
+router.post(
+    '/add-transaction',
+    middlewareController.verifyToken,
+    middlewareController.checkRuleAddTransaction,
+    transactionController.addTransaction,
+);
+
+//transactionController.addTransaction,
 module.exports = router;
