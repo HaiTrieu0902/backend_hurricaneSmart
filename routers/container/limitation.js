@@ -12,6 +12,13 @@ router.get(
     middlewareController.verifyToken,
     limitationController.getDetailLimitationUserByMonth,
 );
+
+router.get(
+    '/get-limitation-transaction-user-byMonth',
+    middlewareController.verifyToken,
+    limitationController.getdetailLimitationTransactionUserByMonth,
+);
+
 router.delete('/detele-limitation', middlewareController.verifyToken, limitationController.deleteLimitation);
 router.put('/update-limitation', middlewareController.verifyToken, limitationController.updateLimitation);
 router.post('/add-limitation', middlewareController.verifyToken, limitationController.addLimitation);

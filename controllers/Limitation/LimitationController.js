@@ -1,21 +1,7 @@
-const { UserModel, LimitationModel, CategoryModel } = require('../../models');
-
+const { UserModel, LimitationModel, CategoryModel, TransactionModel } = require('../../models');
+const moment = require('moment');
 const limitationController = {
     /* Get All Limitation */
-    // getAllLimitation: async (req, res) => {
-    //     try {
-    //         const totalLimitation = await LimitationModel.countDocuments({});
-    //         const limitation = await LimitationModel.find({}, '-id -__v ');
-    //         res.status(200).json({
-    //             status: 200,
-    //             message: 'Get all  limitation successfully',
-    //             total: totalLimitation,
-    //             data: limitation,
-    //         });
-    //     } catch (error) {
-    //         res.status(500).json(error);
-    //     }
-    // },
     getAllLimitation: async (req, res) => {
         try {
             const allLimitations = await LimitationModel.find({}, '-_id -__v');
@@ -133,11 +119,6 @@ const limitationController = {
                     status: 200,
                     data: organizedData,
                 });
-                // return res.status(200).json({
-                //     message: `Get all limitations for user ID ${userId} successfully`,
-                //     status: 200,
-                //     data: limitations,
-                // });
             } else {
                 return res.status(404).json('No limitations found for this user ID');
             }
@@ -184,6 +165,72 @@ const limitationController = {
             } else {
                 return res.status(404).json('No limitations found for this user ID or Month or Year');
             }
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    },
+
+    /* Get detail Limitation - transaction - User - Month*/
+    getdetailLimitationTransactionUserByMonth: async (req, res) => {
+        try {
+            const { userId, month, year } = req.query;
+            if (!userId || !month || !year) {
+                return res.status(400).json({
+                    message: 'Bad Request: Missing required parameters',
+                    status: 400,
+                });
+            }
+            const startDate = moment(`${year}-${month}-01`, 'YYYY-MM-DD'); // Ngày đầu tháng
+            const endDate = moment(startDate).endOf('month'); // Ngày cuối tháng
+            const userTransactions = await TransactionModel.find(
+                {
+                    user_id: userId,
+                    date: {
+                        $gte: startDate.toDate(),
+                        $lte: endDate.toDate(),
+                    },
+                },
+                '-_id -__v',
+            );
+            const userLimitations = await LimitationModel.find({ user_id: userId, month: month, year: year }).select(
+                '-_id -__v',
+            );
+
+            const result = {
+                status: 200,
+                message: `get detail Limitation Transaction User ${userId} By Month`,
+                user_id: Number(userId),
+                month: Number(month),
+                total_spent: 0,
+                total_limit: 0,
+                year: Number(year),
+                data: [],
+            };
+
+            const categorySpentMap = {};
+
+            userTransactions.forEach((transaction) => {
+                const { category_key, amount } = transaction;
+                if (!categorySpentMap[category_key]) {
+                    categorySpentMap[category_key] = 0;
+                }
+                categorySpentMap[category_key] += amount;
+            });
+
+            userLimitations.forEach((limitation) => {
+                const { category_key, amount_limit } = limitation;
+                const amount_spent = categorySpentMap[category_key] || 0;
+                result.data.push({
+                    category_key,
+                    amount_spent,
+                    amount_limit,
+                });
+            });
+            const totalSpent = result.data.reduce((total, item) => total + item.amount_spent, 0);
+            const totalLimit = result.data.reduce((total, item) => total + item.amount_limit, 0);
+            result.total_spent = totalSpent;
+            result.total_limit = totalLimit;
+            return res.status(200).json(result);
         } catch (error) {
             res.status(500).json(error);
         }
