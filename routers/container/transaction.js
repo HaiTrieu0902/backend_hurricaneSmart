@@ -19,7 +19,12 @@ router.post(
     transactionController.deleteTransactionMultiple,
 );
 
-router.put('/update-transaction', middlewareController.verifyToken, transactionController.updateTransaction);
+router.put(
+    '/update-transaction',
+    middlewareController.verifyToken,
+    middlewareController.checkRuleUpdateTransaction,
+    transactionController.updateTransaction,
+);
 router.post(
     '/add-transaction',
     middlewareController.verifyToken,
@@ -27,5 +32,5 @@ router.post(
     transactionController.addTransaction,
 );
 
-//transactionController.addTransaction,
+//transactionController.addTransaction, transactionController.updateTransaction
 module.exports = router;

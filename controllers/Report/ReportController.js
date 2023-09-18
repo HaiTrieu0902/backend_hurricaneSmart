@@ -28,7 +28,9 @@ const reportController = {
                     $gte: startDate.toDate(),
                     $lte: endDate.toDate(),
                 },
-            }).select('-_id -__v -user_id');
+            })
+                .select('-_id -__v -user_id')
+                .sort({ date: 1 });
 
             if (transactions && transactions.length > 0) {
                 return res.status(200).json({
@@ -57,24 +59,6 @@ const reportController = {
             if (!user) {
                 return res.status(401).json({ error: 'Not found user ID, please try it again!' });
             }
-            // if (month) {
-            //     const startDate = moment(`${year}-${month}-01`, 'YYYY-MM-DD');
-            //     const endDate = moment(startDate).endOf('month');
-
-            //     const transactions = await TransactionModel.find({
-            //         user_id: userId,
-            //         date: {
-            //             $gte: startDate.toDate(),
-            //             $lte: endDate.toDate(),
-            //         },
-            //     }).select('-_id -__v -user_id');
-            //     return res.status(200).json({ data: transactions });
-            // } else {
-            //     const transactions = await TransactionModel.find({
-            //         user_id: userId,
-            //     }).select('-_id -__v -user_id');
-            //     return res.status(200).json({ data: transactions });
-            // }
             let transactions;
             if (month) {
                 const startDate = moment(`${year}-${month}-01`, 'YYYY-MM-DD');
@@ -106,8 +90,6 @@ const reportController = {
             // Nhóm các giao dịch theo category_key và tính tổng cho mỗi category_key
             const groupedTransactions = transactions.reduce((acc, transaction) => {
                 const { category_key, amount } = transaction;
-
-                console.log('hihi', acc);
                 if (!acc[category_key]) {
                     acc[category_key] = { category_key, total: 0 };
                 }
@@ -116,8 +98,6 @@ const reportController = {
             }, {});
 
             const data = Object.values(groupedTransactions);
-
-            // Tạo đối tượng JSON phản hồi
             const response = {
                 message: 'Success',
                 month: parseInt(month),
