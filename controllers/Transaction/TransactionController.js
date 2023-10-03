@@ -42,6 +42,7 @@ const transactionController = {
     getDetailTransactionUser: async (req, res) => {
         try {
             const userId = req.query?.userId;
+            const searchValue = req.query?.searchValue;
             if (!userId) {
                 return res.status(400).json({
                     message: 'Bad Request: Missing required parameters',
@@ -54,7 +55,14 @@ const transactionController = {
                 return res.status(401).json({ error: 'Not found user ID, please try it again!' });
             }
 
-            const transactions = await TransactionModel.find({ user_id: userId }).select('-_id -__v -user_id');
+            const transactions = await TransactionModel.find({
+                user_id: userId,
+                $or: [
+                    { note: { $regex: searchValue, $options: 'i' } }, // i find UpCase and LowCase
+                    { category_key: { $regex: searchValue, $options: 'i' } },
+                ],
+            }).select('-_id -__v -user_id');
+
             if (transactions && transactions.length > 0) {
                 return res.status(200).json({
                     message: `Get all transactions for user ID ${userId} successfully`,
