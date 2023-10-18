@@ -41,8 +41,8 @@ const transactionController = {
     /* Get detail Transaction - User*/
     getDetailTransactionUser: async (req, res) => {
         try {
-            const userId = req.query?.userId;
-            const searchValue = req.query?.searchValue;
+            const { userId, searchValue, year } = req.query;
+
             if (!userId) {
                 return res.status(400).json({
                     message: 'Bad Request: Missing required parameters',
@@ -50,34 +50,45 @@ const transactionController = {
                 });
             }
 
-            const user = await UserModel.findOne({ user_id: req.query?.userId });
+            const user = await UserModel.findOne({ user_id: userId });
+
             if (!user) {
                 return res.status(401).json({ error: 'Not found user ID, please try it again!' });
             }
 
-            const transactions = await TransactionModel.find({
-                user_id: userId,
-                $or: [
-                    { note: { $regex: searchValue, $options: 'i' } }, // i find UpCase and LowCase
-                    { category_key: { $regex: searchValue, $options: 'i' } },
-                ],
-            }).select('-_id -__v -user_id');
+            let transactions;
 
-            if (transactions && transactions.length > 0) {
-                return res.status(200).json({
-                    message: `Get all transactions for user ID ${userId} successfully`,
-                    status: 200,
-                    userId: userId,
-                    data: transactions,
-                });
+            if (year) {
+                const startOfYear = moment(`${year}-01-01`, 'YYYY-MM-DD').startOf('year');
+                const endOfYear = moment(`${year}-12-31`, 'YYYY-MM-DD').endOf('year');
+
+                transactions = await TransactionModel.find({
+                    user_id: userId,
+                    $or: [
+                        { note: { $regex: searchValue, $options: 'i' } },
+                        { category_key: { $regex: searchValue, $options: 'i' } },
+                    ],
+                    date: {
+                        $gte: startOfYear.toDate(),
+                        $lte: endOfYear.toDate(),
+                    },
+                }).select('-_id -__v -user_id');
             } else {
-                return res.status(200).json({
-                    message: `Get all transactions for user ID ${userId} successfully`,
-                    status: 200,
-                    userId: userId,
-                    data: transactions,
-                });
+                transactions = await TransactionModel.find({
+                    user_id: userId,
+                    $or: [
+                        { note: { $regex: searchValue, $options: 'i' } },
+                        { category_key: { $regex: searchValue, $options: 'i' } },
+                    ],
+                }).select('-_id -__v -user_id');
             }
+
+            return res.status(200).json({
+                message: `Get all transactions for user ID ${userId} successfully`,
+                status: 200,
+                userId: userId,
+                data: transactions,
+            });
         } catch (error) {
             res.status(500).json(error);
         }
