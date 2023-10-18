@@ -83,17 +83,41 @@ const transactionController = {
                 }).select('-_id -__v -user_id');
             }
 
+            // convert data
+            let totalAmount = 0;
+            const groupedData = {};
+            transactions.forEach((transaction) => {
+                const transactionDate = moment(transaction.date).format('YYYY-MM-DD');
+                totalAmount += transaction.amount;
+                const { user_id, date, createdAt, updatedAt, ...transactionRes } = transaction.toObject();
+                if (!groupedData[transactionDate]) {
+                    groupedData[transactionDate] = {
+                        date: transactionDate,
+                        totalAmountDate: transaction.amount,
+                        transactions: [transactionRes],
+                    };
+                } else {
+                    groupedData[transactionDate].totalAmountDate += transaction.amount;
+                    groupedData[transactionDate].transactions.push(transactionRes);
+                }
+            });
+            const valueTransactionFilter = Object.values(groupedData);
+            valueTransactionFilter.sort((a, b) => {
+                return new Date(a.date) - new Date(b.date);
+            });
+
             return res.status(200).json({
                 message: `Get all transactions for user ID ${userId} successfully`,
                 status: 200,
                 userId: userId,
-                data: transactions,
+                data: valueTransactionFilter,
             });
         } catch (error) {
             res.status(500).json(error);
         }
     },
 
+    /* Get detail Transaction - User*/
     getDetailTransactionUserByMonth: async (req, res) => {
         try {
             const { userId, month, year } = req.query;
