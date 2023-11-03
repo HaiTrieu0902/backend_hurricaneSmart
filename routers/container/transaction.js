@@ -28,7 +28,7 @@ router.put(
 router.post(
     '/add-transaction',
     middlewareController.verifyToken,
-    middlewareController.checkRuleAddTransaction,
+    // middlewareController.checkRuleAddTransaction,
     transactionController.addTransaction,
 );
 
