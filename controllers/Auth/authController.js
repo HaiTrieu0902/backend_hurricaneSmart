@@ -50,7 +50,11 @@ const authController = {
                 },
             });
         } catch (error) {
-            res.status(500).json({ error: 'data duplication error', message: error?.keyValue });
+            console.log('error?.keyValue', error?.keyValue?.username);
+            res.status(500).json({
+                error: error?.keyValue?.username || error?.keyValue?.email,
+                message: error?.keyValue,
+            });
         }
     },
 

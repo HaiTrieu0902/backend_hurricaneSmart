@@ -38,7 +38,7 @@ const transactionController = {
         }
     },
 
-    /* Get detail Transaction - User*/
+    /* Get detail Transaction - User Search*/
     getDetailTransactionUser: async (req, res) => {
         try {
             const { userId, searchValue, year } = req.query;
@@ -101,6 +101,8 @@ const transactionController = {
                     groupedData[transactionDate].transactions.push(transactionRes);
                 }
             });
+
+            /* reverse value */
             const valueTransactionFilter = Object.values(groupedData);
             valueTransactionFilter.sort((a, b) => {
                 return new Date(a.date) - new Date(b.date);
